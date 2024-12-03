@@ -188,11 +188,11 @@ Las reglas que controlan la propiedad de un valor son:
 - El propietario de un valor es único en cada momento, aunque puede variar a lo largo de la vida del valor.
 - Cuando se termina el ámbito del propietario, se libera el valor.
 
-### Copia de variables
+### Asignación de variables con copia
 
 Para entender la propiedad, primero es necesario conocer cómo se copian variables en Rust. Hay que distinguir en primer lugar la copia de los tipos simples (enteros, reales, `char` y `bool`). Para estos tipos, cuando se asignan variables, se crea una nueva copia del valor del tipo correspondiente, por lo que no hay conflictos de propiedad:
 
-~~~{.rs}
+~~~{.rust}
     fn main() {
         let x = 5;
         let y = x;
@@ -203,9 +203,132 @@ Para entender la propiedad, primero es necesario conocer cómo se copian variabl
 
 En el ejemplo anterior, hay dos variables de tipo `i32`y ambas estás asociadas a dos valores distintos, es decir, dos copias del valor `5i32`.
 
-Esa regla también se aplica a las tuplas si, recursivamente, la regla anterior de puede aplicar a los tipos de sus componentes.
+Esa regla también se aplica a las tuplas y arrays si, recursivamente, la regla anterior de puede aplicar a los tipos de sus componentes.
 
+### Asignación de variables con movimiento
 
+Hay tipos que no tienen implementada la operación de copia, como el tipo predefinido `String`. Para esos tipos, una asignación de variables significa que se *mueve* la propiedad del valor de la variable que está en la derecha de la asignación a la variable que está a la izquierda de la asignación. A partir de ese momento, la variable a la derecha ya no se puede usar.
+
+~~~{.rust}
+    fn main() {
+    let s1 = String::from("hello");
+    let mut s2 = s1;
+
+    s2.push_str(" world!");
+
+    println!("{s2}");
+
+    }
+~~~
+
+Desde la asignación `let mut s2 = s1;`, la variable `s1` ya no es utilizable, porque el valor que tenía en propiedad se ha movido a otra variable.
+
+### Asignación de variables a parámetros de funciones
+
+La regla a la hora de aplicar parámetros reales a parámetros formales de funciones es la misma que en la asigación de variables. Para los tipos con copia (los escalares, tuplas y arrays de elementos copiables), se crea una copia del parámetro real y se le asigna al parámetro formal. Para los tipos sin copia, como `String`, se hace un movimiento del valor y el parámetro formal deja de ser utilizable.
+
+~~~{.rust}
+    fn main() {
+
+        let s1 = String::from("hello");
+        let x = 5;
+
+        my_function(x, s1);
+        println!("{x}");
+
+    }
+
+    fn my_function(i:i32, ss: String){
+        println!("{i} {ss}");
+    }
+~~~
+
+### Referencias. Préstamo de propiedad
+
+La regla de mover un valor e inutilizar una variable cuando se asigna con movimiento es muy restrictiva. Las referencias proporcionan la posibilidad de pedir prestada la propiedad de un valor sin inutilizar una variable.
+
+Se pueden usar referencias en la asignación entre variables o definir un parámetro formal de una función como una referencia. También se puede usar como valor devuelto por una función.
+
+~~~{.rust}
+    fn main() {
+
+        let s1 = String::from("hello");
+
+        let s2 = &s1;
+
+        my_function(s2);
+        my_function(&s1);
+
+        println!("s1: {s1}");
+        println!("s2: {s2}");
+
+    }
+
+    fn my_function(s: & String) {
+        println!("my_function: {s}");
+    }
+~~~
+
+Para pedir prestada la propiedad de un valor con la intención de modificarlo, hay que usar una referencia mutable.
+
+~~~{.rust}
+    fn main() {
+        let mut s = String::from("hello");
+
+        change(&mut s);
+    }
+
+    fn change(some_string: &mut String) {
+        some_string.push_str(", world");
+    }
+~~~
+
+Para evitar condiciones de carrera en el acceso por referencia a un valor, el uso de referencias está restringido según las siguientes reglas:
+
+- Pueden haber múltiples referencias no mutables activas a la vez.
+- Una referencia mutable no puede estar activa a la vez que otra referencia, ya sea mutable o no.
+
+### Referencias colgantes
+
+Tener una referencia que apunte a un valor cuyo ámbito se ha borrado y que el compilador ha retirado de memoria es una situación errónea que debemos evitar. Esas referencias son conocidas como *colgantes* o *huérfanas* (traducción del término *dangling*). Una referencia, por tanto, no puede tener una vida más larga que el valor al que apunta. Una posible situación de este tipo, prohibida por el compilador, es que una función devuelva una referencia a una variable creada localmente.
+
+~~~{.rust}
+    fn main() {
+        let reference_to_nothing = dangle();
+    }
+
+    fn dangle() -> &String {
+        let s = String::from("hello");
+
+        &s
+    }
+~~~
+
+### El tipo `slice`
+
+Una `slice` en Rust es una referencia a una secuencia continua de elementos en una colección. Un *slice* se define indicando cuál es el rango al que va a hacer referencia. Para ello, se indica la posición de inicio y la de fin separadas por dos caracteres punto. Si la posición de inicio es la primera (la 0), se puede omitir. Si la posición de final es la última de la variable, también se puede omitir.
+
+## Estructuras
+
+Las estructuras de Rust permiten crear datos con componentes de tipos distintos. La visibilidad de los componentes se puede limitar (que sean públicos o privados). También se pueden definir operaciones para efectuar sobre las variables de un tipo estructura.
+
+~~~{.rust}
+    struct User {
+        active: bool,
+        username: String,
+        email: String,
+        sign_in_count: u64,
+    }
+
+    fn main() {
+        let user1 = User {
+            active: true,
+            username: String::from("someusername123"),
+            email: String::from("someone@example.com"),
+            sign_in_count: 1,
+        };
+    }
+~~~
 
 ## Documentación
 [The Rust Book](https://doc.rust-lang.org/book/title-page.html)
