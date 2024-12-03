@@ -120,6 +120,91 @@ Similares a las de Java o C++. Por defecto, se devuelve como resultado de la fun
     }
 ~~~
 
+## Estructuras de control
+
+### Sentencia condicional
+
+La sintaxis de la sentencia condicional es muy similar a la de Java/C++:
+
+~~~{.rust}
+fn main() {
+    let number = 6;
+
+    if number % 4 == 0 {
+        println!("number is divisible by 4");
+    } else if number % 3 == 0 {
+        println!("number is divisible by 3");
+    } else if number % 2 == 0 {
+        println!("number is divisible by 2");
+    } else {
+        println!("number is not divisible by 4, 3, or 2");
+    }
+}
+~~~
+
+### Sentencias bucle
+
+El bucle *mientras* también es muy similar al de Java/C++:
+
+~~~{.rust}
+fn main() {
+    let mut number = 3;
+
+    while number != 0 {
+        println!("{number}!");
+
+        number -= 1;
+    }
+
+    println!("LIFTOFF!!!");
+}~~~
+
+El bucle *for* es distinto al tradicional de Java/C++, se parece más al *foreach* de Java:
+
+~~~{.rust}
+fn main() {
+    let a = [10, 20, 30, 40, 50];
+
+    for element in a {
+        println!("the value is: {element}");
+    }
+
+    // (1..4) genera un intervalo de 1 a 3.
+    for number in (1..4).rev() {
+        println!("{number}!");
+    }
+    println!("LIFTOFF!!!");
+}
+~~~
+
+## Propiedad
+
+La *propiedad* de un valor es la característica más definitoria del lenguaje Rust, en particular en la gestión de la memoria y el acceso seguro a los datos.
+
+### Qué es la propiedad
+
+Las reglas que controlan la propiedad de un valor son:
+- Cada valor en Rus tiene un propietario.
+- El propietario de un valor es único en cada momento, aunque puede variar a lo largo de la vida del valor.
+- Cuando se termina el ámbito del propietario, se libera el valor.
+
+### Copia de variables
+
+Para entender la propiedad, primero es necesario conocer cómo se copian variables en Rust. Hay que distinguir en primer lugar la copia de los tipos simples (enteros, reales, `char` y `bool`). Para estos tipos, cuando se asignan variables, se crea una nueva copia del valor del tipo correspondiente, por lo que no hay conflictos de propiedad:
+
+~~~{.rs}
+    fn main() {
+        let x = 5;
+        let y = x;
+
+        println!("x = {x}, y = {y}");
+    }
+~~~
+
+En el ejemplo anterior, hay dos variables de tipo `i32`y ambas estás asociadas a dos valores distintos, es decir, dos copias del valor `5i32`.
+
+Esa regla también se aplica a las tuplas si, recursivamente, la regla anterior de puede aplicar a los tipos de sus componentes.
+
 
 
 ## Documentación
